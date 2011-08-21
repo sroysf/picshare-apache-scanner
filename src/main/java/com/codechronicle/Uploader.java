@@ -1,5 +1,7 @@
 package com.codechronicle;
 
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +25,7 @@ public class Uploader {
 		
 		Uploader uploader = new Uploader();
 		
-		String baseURL = "https://saptarshi.homedns.org/nas/media/Pictures/2009/255.Hawaii/";
+		String baseURL = "https://saptarshi.homedns.org/nas/media/Pictures/2011/";
 		//String baseURL = "https://saptarshi.homedns.org/nas/media/Pictures/2009/255.Hawaii/Dad%20Hawaii%202/Kuaui-1/";
 		uploader.processURL(baseURL);
 	}
@@ -66,15 +68,36 @@ public class Uploader {
 		List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
 		params.add(new BasicNameValuePair("origUrl", url));
 		params.add(new BasicNameValuePair("localFile", ""));
-		//params.add(new BasicNameValuePair("hostOriginal", "on"));
+		
+		String defaultTag = generateDefaultTag(url);
+		params.add(new BasicNameValuePair("tags", defaultTag));
 		
 		HttpConnectionHelper.executePost(client, "http://localhost:8080/rest/image", params);
-		System.out.println("Posting image : " + url);
+		System.out.println("Posting image : " + url + " Tag: [" + defaultTag + "]");
 		
-		if (testCounter++ > 2) {
-			System.out.println("Executing due to test condition");
+		// Just for testing
+		/*
+		if (testCounter++ > 0) {
 			System.exit(0);
 		}
+		*/
+	}
+
+	private String generateDefaultTag(String url) {
+		
+		String tag = null;
+		
+		try {
+			
+			URL encodedURL = new URL(url);
+			tag = URLDecoder.decode(encodedURL.getFile(), "utf-8");
+			tag = tag.substring(0,tag.lastIndexOf("/"));
+			
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+		
+		return tag;
 	}
 
 	private boolean isSubDirectory(String baseURL, String url) {
